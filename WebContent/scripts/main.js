@@ -56,15 +56,16 @@ window.onload = function() {
                 this.frame = 1;
             }
             // 左押下時は左方向へ加速度を追加しつつ左向きに
-            if (game.input.left) {
+            if (game.input.left || game.input.analogX < 0) {
                 this.direction = -1;
                 this.vx--;
             }
             // 右押下時は右方向へ加速度を追加しつつ右向きに
-            else if (game.input.right) {
+            else if (game.input.right || game.input.analogX > 0) {
                 this.direction = 1;
                 this.vx++;
             }
+            if (game.input.analogX / 4)
             // 「現在左向き(scaleX > 0)で右押下(direction > 0)」もしくは
             // 「現在右向き(scaleX < 0)で左押下(direction < 0)」のとき
             // キャラクタの向きを反転
@@ -108,6 +109,17 @@ window.onload = function() {
         });
         game.rootScene.backgroundColor = '#000000';
         game.keybind(32, "a"); // Aボタンとしてスペースキー(32)を設定
+        game.rootScene.addEventListener(Event.TOUCH_START, function() {
+            game.input.a = true;
+        });
+        game.rootScene.addEventListener(Event.TOUCH_END, function() {
+            game.input.a = false;
+        });
     }
+    // 傾きセンサーを設定
+    window.addEventListener("deviceorientation", function(evt) {
+        var x = evt.gamma; // 横方向の傾斜角度
+        game.input.analogX = x;
+    }, false);
     game.start();
 }
