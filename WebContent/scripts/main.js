@@ -3,7 +3,7 @@ window.onload = function() {
     var game = new Core(256, 224);
     game.preload('images/player.png', 'images/wave.png', 'images/start.png', 'images/gameover.png');
     game.fps = 15;
-    game.scale = 2;
+    game.scale = 1;
     game.onload = function() {
         var createStartScene = function() {
             var scene = new Scene();
