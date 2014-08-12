@@ -3,7 +3,6 @@ window.onload = function() {
     var game = new Core(256, 224);
     game.preload('images/player.png', 'images/wave.png', 'images/start.png', 'images/gameover.png');
     game.fps = 15;
-    game.scale = 1;
     game.onload = function() {
         var createStartScene = function() {
             var scene = new Scene();
@@ -146,11 +145,11 @@ window.onload = function() {
 
         game.keybind(32, "a"); // Aボタンとしてスペースキー(32)を設定
         game.pushScene(createStartScene());
-    }
+    };
     // 傾きセンサーを設定
     window.addEventListener("deviceorientation", function(evt) {
         var x = evt.gamma; // 横方向の傾斜角度
         game.input.analogX = x;
     }, false);
     game.start();
-}
+};
