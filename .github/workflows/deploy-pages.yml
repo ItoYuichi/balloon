@@ -1,0 +1,52 @@
+# master への push 時に WebContent/ を GitHub Pages へ公開する
+# 前提：リポジトリの Settings → Pages の「Source」を「GitHub Actions」に設定しておくこと
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'WebContent/**'                       # 公開ファイルに変更があったときだけ実行する
+      - '.github/workflows/deploy-pages.yml'  # ワークフロー自体の変更時も反映を確認できるよう実行する
+  workflow_dispatch:                          # Actions 画面から手動でも実行できるようにする
+
+# 公開に必要な最小限の権限だけを与える
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 公開処理が同時に走らないようにする（実行中の公開は中断せず、完了を待つ）
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: リポジトリを取得
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false  # 以降の手順で Git 認証情報を使わないため残さない
+
+      # 構文エラーのある main.js を公開しないよう、公開前にチェックする
+      - name: Node.js を準備
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: main.js の構文チェック
+        run: node --check WebContent/scripts/main.js
+
+      - name: Pages の設定
+        uses: actions/configure-pages@v6
+      - name: 公開ファイルをアップロード
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: WebContent
+      - name: GitHub Pages へ公開
+        id: deployment
+        uses: actions/deploy-pages@v5
