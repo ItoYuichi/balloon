@@ -149,36 +149,34 @@ window.onload = function() {
         game.pushScene(createStartScene());
     };
     // 傾きセンサーを設定
-    var startOrientationSensor = function() {
-        window.addEventListener("deviceorientation", function(evt) {
-            var x = evt.gamma; // 横方向の傾斜角度
-            game.input.analogX = x;
-        }, false);
-    };
-    // iOS13以降は requestPermission() で許可を得てからでないとイベントが通知されない。
-    // requestPermission() はiOS(Safari)にしか存在しないため、存在する場合のみ呼び出す
+    // 許可の要否や requestPermission() の結果はブラウザによって異なるため、
+    // リスナーは常に登録しておく(許可が必要な環境では、許可されるまでイベントが通知されないだけ)
+    window.addEventListener("deviceorientation", function(evt) {
+        var x = evt.gamma; // 横方向の傾斜角度
+        game.input.analogX = x;
+    }, false);
+    // iOS13以降は requestPermission() で許可を得ないとイベントが通知されない。
+    // requestPermission() は存在しないブラウザもあるため、存在する場合のみ呼び出す。
+    // また、ユーザー操作(タップ)のイベント処理中に呼び出さないと拒否される
     var orientationPermissionRequested = false;
     var requestOrientationPermission = function() {
         if (orientationPermissionRequested) {
             return;
         }
+        if (!window.DeviceOrientationEvent ||
+                typeof DeviceOrientationEvent.requestPermission !== 'function') {
+            return;
+        }
         orientationPermissionRequested = true;
-        if (window.DeviceOrientationEvent &&
-                typeof DeviceOrientationEvent.requestPermission === 'function') {
-            DeviceOrientationEvent.requestPermission().then(function(state) {
-                if (state === 'granted') {
-                    startOrientationSensor();
-                }
-            }).catch(function(err) {
-                // ユーザー操作外での呼び出し等で失敗した場合は、次回タップ時に再要求する
-                orientationPermissionRequested = false;
-                console.warn('傾きセンサーの許可要求に失敗しました', err);
-            });
-        }
-        else {
-            // Android・PC等は許可不要のため、そのまま登録する
-            startOrientationSensor();
-        }
+        DeviceOrientationEvent.requestPermission().then(function(state) {
+            if (state !== 'granted') {
+                console.warn('傾きセンサーの利用が許可されませんでした', state);
+            }
+        }).catch(function(err) {
+            // ユーザー操作外での呼び出し等で失敗した場合は、次回タップ時に再要求する
+            orientationPermissionRequested = false;
+            console.warn('傾きセンサーの許可要求に失敗しました', err);
+        });
     };
     game.start();
 };
