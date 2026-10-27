@@ -151,5 +151,7 @@ window.onload = function() {
         var x = evt.gamma; // 横方向の傾斜角度
         game.input.analogX = x;
     }, false);
+    DeviceOrientationEvent.requestPermission();
+    DeviceMotionEvent.requestPermission();
     game.start();
 };
