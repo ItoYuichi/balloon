@@ -39,10 +39,14 @@ window.onload = function() {
                 [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
                 [  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 ]
             ]);
+            // 背景を左から右へ流す
+            // マップは画面幅より1タイル分広いため、左に1タイル分ずらした位置から右へ動かし、
+            // 1タイル分動いたら元の位置へ戻すことで途切れずにループさせる
+            map.x = -map.tileWidth;
             map.addEventListener(Event.ENTER_FRAME, function() {
-                this.x--;
-                if (this.x <= -this.tileWidth) {
-                    this.x = 0;
+                this.x++;
+                if (this.x >= 0) {
+                    this.x = -this.tileWidth;
                 }
             });
 
@@ -55,13 +59,12 @@ window.onload = function() {
 
             var player = new Sprite(16, 24);
             player.image = game.assets['images/player.png'];
-            player.x = 10;
+            player.x = game.width - player.width - 10;  // 画面右上に登場させる
             player.y = 10;
             player.vx = 0;
             player.vy = 2;
             player.frame = 1;
-            player.direction = 1;   // 1:右向き -1:左向き
-            player.scaleX *= -1;    // キャラクタを右向きに反転
+            player.direction = -1;  // 1:右向き -1:左向き(画像は元々左向きのため反転しない)
             player.addEventListener(Event.ENTER_FRAME, function() {
                 // Aボタン押下中は上方向へ加速度を追加しつつ羽ばたき動作
                 if (game.input.a) {
